@@ -4,8 +4,11 @@
 #
 # Create new or existing git-capable, self-hosted, projects easily.
 #
+# Based on work by:
 # James Doyle(james2doyle)
 # Copyright 2013 MIT
+# With customizations for working at NM by:
+# Dan Bonomo(dbonomo)
 
 red=$(tput setaf 1 || tput AF 1)
 green=$(tput setaf 2 || tput AF 2)
@@ -17,7 +20,7 @@ reset=$(tput sgr0)
 unset folderexists
 
 # grab the name of the project to also be used as the folder names
-echo -n "Enter a project/subdomain name (something.nerdymind.com): "
+echo -n "Enter a project/subdomain name: "
 read folder
 
 # check for the existance of $folder, exit out if one exists
