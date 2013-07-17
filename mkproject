@@ -2,7 +2,7 @@
 #
 # mkproject
 #
-# Create git-capable, self-hosted, projects easily.
+# Create new or existing git-capable, self-hosted, projects easily.
 #
 # James Doyle(james2doyle)
 # Copyright 2013 MIT
@@ -14,21 +14,28 @@ blue=$(tput setaf 4 || tput AF 4)
 magenta=$(tput setaf 5 || tput AF 5)
 cyan=$(tput setaf 6 || tput AF 6)
 reset=$(tput sgr0)
+unset folderexists
 
 # grab the name of the project to also be used as the folder names
-echo -n "Project name > "
+echo -n "Enter a project/subdomain name (something.nerdymind.com): "
 read folder
 
-# check for the existance of $folder
+# check for the existance of $folder, exit out if one exists
+#if [[ -e "$folder" ]]; then
+#  printf "$red$folder already exists. Use another name or remove $folder\n$reset"
+#  exit 1
+#fi
+
+# check to see if folder exists, let the user know that the contents will create the initial commit. 
 if [[ -e "$folder" ]]; then
-  printf "$red$folder already exists. Use another name or remove $folder\n$reset"
-  exit 1
+  printf "$green$folder already exists. Contents of$reset $red$folder$reset$green will be committed into the site repository \n$reset"
+  folderexists=true
 fi
 
-hubFolder="${folder}_hub.git"
+hubFolder="${folder}.hub"
 thisPath="${PWD}"
 
-printf "Creating $red$hubFolder$reset repo hub\n\n"
+printf "Creating $red$hubFolder$reset repository hub\n\n"
 
 mkdir "$hubFolder"
 cd "$hubFolder"
@@ -38,7 +45,7 @@ git --bare init --shared=all
 touch hooks/post-receive
 chmod u+x hooks/post-receive
 
-# creating htaccess so that you cant see the .git directory
+# creating htaccess so that you can't see the .git directory
 touch .htaccess
 cat > .htaccess <<- _EOF_
 Order allow,deny
@@ -58,16 +65,28 @@ _EOF_
 
 printf "Created$yellow .git/hooks/post-receive$reset with hub pull\n\n"
 
+if [[ -e "$folderexists" ]]; then
+# init existing folder
+  #back out of hub dir
+	cd ../
+	cd "$folder"
+	printf "Commtting $red$folder$reset to the site folder\n\n"
+	
+	git init --shared=all
+else
 # start prime folder creation
-cd ../
+	#back out of hub dir
+	cd ../
+	
+	printf "Creating $red$folder$reset site folder\n\n"
+	
+	mkdir "$folder"
+	cd "$folder"
+	
+	git init --shared=all
+fi
 
-printf "Creating $red$folder$reset site folder\n\n"
-
-mkdir "$folder"
-cd "$folder"
-
-git init --shared=all
-
+# creates post-commit hook
 touch .git/hooks/post-commit
 chmod u+x .git/hooks/post-commit
 
